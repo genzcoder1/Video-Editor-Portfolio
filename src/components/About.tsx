@@ -1,9 +1,12 @@
 import { motion, useScroll, useTransform } from 'motion/react';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function About() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const imageSrc = new URL('../img/image .JPG', import.meta.url).href;
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
@@ -13,21 +16,28 @@ export function About() {
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.8, 1, 1, 0.8]);
 
+  // Preload image
+  useEffect(() => {
+    const img = new Image();
+    img.src = imageSrc;
+    img.onload = () => setImageLoaded(true);
+  }, [imageSrc]);
+
   return (
     <div ref={containerRef} className="relative min-h-screen py-32 px-4 bg-black">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
+        <motion.div
           style={{ y }}
           className="absolute top-40 -right-20 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"
         />
-        <motion.div 
+        <motion.div
           style={{ y: useTransform(y, v => -v) }}
           className="absolute bottom-40 -left-20 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"
         />
       </div>
 
-      <motion.div 
+      <motion.div
         style={{ opacity, scale }}
         className="max-w-7xl mx-auto relative z-10"
       >
@@ -45,14 +55,34 @@ export function About() {
               <motion.div
                 className="relative overflow-hidden rounded-2xl"
               >
-                <ImageWithFallback
-                  src={new URL('../img/image .JPG', import.meta.url).href}
-                  alt="Cinematic Video Production"
-                  className="w-full h-[600px] object-cover"
-                />
+                {/* Loading Skeleton */}
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-700/50 to-transparent animate-shimmer"
+                      style={{
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 2s infinite'
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Actual Image */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: imageLoaded ? 1 : 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <ImageWithFallback
+                    src={imageSrc}
+                    alt="Cinematic Video Production"
+                    className="w-full h-[600px] object-cover"
+                    loading="eager"
+                  />
+                </motion.div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
               </motion.div>
-              
+
               {/* Floating Badge */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
@@ -111,13 +141,13 @@ export function About() {
               className="space-y-4 text-gray-400 text-lg"
             >
               <p>
-                I specialize in transforming creative visions into stunning visual narratives 
-                through the art of <span className="text-purple-400">cinematic editing</span>, 
+                I specialize in transforming creative visions into stunning visual narratives
+                through the art of <span className="text-purple-400">cinematic editing</span>,
                 <span className="text-cyan-400"> motion graphics</span>, and dynamic storytelling.
               </p>
               <p>
-                From high-energy reels to emotionally-driven brand content, I craft each frame 
-                with precision, blending technical expertise with artistic vision to create 
+                From high-energy reels to emotionally-driven brand content, I craft each frame
+                with precision, blending technical expertise with artistic vision to create
                 content that captivates and resonates.
               </p>
             </motion.div>
@@ -141,13 +171,13 @@ export function About() {
                   whileHover={{ scale: 1.05, x: 10 }}
                   className="flex items-center gap-3 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 group"
                 >
-                  <div className={`w-2 h-2 rounded-full bg-${item.color}-400 group-hover:w-3 transition-all`} 
-                       style={{ 
-                         backgroundColor: item.color === 'purple' ? '#c084fc' : 
-                                         item.color === 'pink' ? '#f472b6' : '#22d3ee',
-                         boxShadow: `0 0 10px ${item.color === 'purple' ? '#c084fc' : 
-                                                item.color === 'pink' ? '#f472b6' : '#22d3ee'}`
-                       }} 
+                  <div className={`w-2 h-2 rounded-full bg-${item.color}-400 group-hover:w-3 transition-all`}
+                    style={{
+                      backgroundColor: item.color === 'purple' ? '#c084fc' :
+                        item.color === 'pink' ? '#f472b6' : '#22d3ee',
+                      boxShadow: `0 0 10px ${item.color === 'purple' ? '#c084fc' :
+                        item.color === 'pink' ? '#f472b6' : '#22d3ee'}`
+                    }}
                   />
                   <span className="text-white">{item.label}</span>
                 </motion.div>
